@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# This code is in Public Domain (see LICENSE)
 import os
 import sys
 import stat
@@ -104,6 +105,8 @@ def main(argv):
         print args
         return
 
+    if os.path.isdir(args.sessionstore):
+        args.sessionstore = os.path.join(args.sessionstore, 'sessionstore.js')
     f = open(args.sessionstore,['rt','r+t'][want_save])
     st = os.fstat(f.fileno())
     sessionstore = json.load(f)
