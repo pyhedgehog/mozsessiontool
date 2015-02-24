@@ -11,6 +11,7 @@ import argparse
 import urllib
 import datetime
 import pprint
+import difflib
 try: import pwd
 except ImportError: pwd = None
 try: import grp
@@ -186,6 +187,22 @@ def tabs_info(tab):
         return tab['entries'][tab['index']-1]
     return dict(url=tab['userTypedValue'], title=tab.get('title','Loading...'))
 
+def dump4diff(obj,name='obj'):
+    if isinstance(obj, list):
+        yield "%s.len() = %d\n" % (name,len(obj))
+        for i,v in enumerate(obj):
+            for s in dump4diff(v,"%s[%d]"%(name,i)):
+                yield s
+    elif isinstance(obj, dict):
+        yield "%s.keys() = %s\n" % (name,obj.keys())
+        for k,v in sorted(obj.items()):
+            try: k = str(k)
+            except UnicodeError: pass
+            for s in dump4diff(v,"%s[%r]"%(name,k)):
+                yield s
+    else:
+        yield "%s = %r\n" % (name, obj)
+
 def main(argv):
     global parser, args, sessionstore, sessionstore_fd, checkpoints, checkpoints_fd
     if hasattr(sys.stdout, 'errors') and hasattr(sys.stdout, 'buffer') and io is not None:
@@ -282,6 +299,9 @@ def main(argv):
                 url = tab['entries'][tab['index']-1]
                 print('Window %d: Selected tab (%d/%d): %s' % (w+1,tabs['selected'],len(tabs['tabs']),url['url']))
 
+        saved_sessionstore = list(dump4diff(sessionstore,'sessionstore'))
+        if checkpoints is not None:
+            saved_checkpoints = list(dump4diff(checkpoints,'checkpoints'))
         # proceed action
         if args.action == 'wselect':
             sessionstore['selectedWindow'] = args.window
@@ -318,12 +338,23 @@ def main(argv):
                 sessionstore['session']['state'] = 'stopped'
             if 'recentCrashes' in sessionstore['session']:
                 del sessionstore['session']['recentCrashes']
+            if (len(sessionstore['windows'])==1 and
+                len(sessionstore['windows'][0]['tabs'])==1 and
+                len(sessionstore['windows'][0]['tabs'][0]['entries'])==1 and
+                sessionstore['windows'][0]['tabs'][0]['entries'][0]['url']=='about:sessionrestore' and
+                sessionstore['windows'][0]['tabs'][0]['formdata']['url']=='about:sessionrestore'):
+                #print('Restoring crashed session...')
+                sessionstore = sessionstore['windows'][0]['tabs'][0]['formdata']['id']['sessionData']
 
         # save/pretend
         if want_save and args.pretend:
-            print(json.dumps(sessionstore,ensure_ascii=True,separators=(',',':')))
+            for line in difflib.unified_diff(saved_sessionstore, list(dump4diff(sessionstore,'sessionstore')), 'sessionstore.js orig', 'sessionstore.js changed'):
+                sys.stdout.write(line)
+            #print(json.dumps(sessionstore,ensure_ascii=True,separators=(',',':')))
             if checkpoints is not None:
-                print(json.dumps(checkpoints))
+                for line in difflib.unified_diff(saved_checkpoints, list(dump4diff(checkpoints,'checkpoints')), 'sessionCheckpoints.json orig', 'sessionCheckpoints.json changed'):
+                    sys.stdout.write(line)
+                #print(json.dumps(checkpoints))
         elif want_save:
             if checkpoints is not None:
                 checkpoints_fd.seek(0,0)
