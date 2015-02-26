@@ -215,6 +215,7 @@ def main(argv):
     parser.add_argument('sessionstore', nargs='?', metavar='FILE', help='Path to sessionstore.js')
     parser.add_argument('--window', '-w', type=int, help='Use window instead of current')
     parser.add_argument('--tab', '-t', type=int, help='Use tab instead of current')
+    parser.add_argument('--grep', '--find', '-g', metavar='STR', help='Find tabs with URL containing STR')
     actions = parser.add_argument_group('actions')
     actions.add_argument('--action', '--do', choices='wselect tselect wclose tclose fix'.split(), help='Do some changes to saved session state (use only if firefox is down)')
     actions.add_argument('--wselect', dest='action', const='wselect', action='store_const', help='Change current window to selected (short form for --action=wselect)')
@@ -274,15 +275,22 @@ def main(argv):
             print('checkpoint: %s' % (showcheckpoint(checkpoints),))
 
         # show windows
-        for w in range(len(sessionstore['windows'])):
+        for w,window in enumerate(sessionstore['windows']):
             selected = w==args.window-1
-            tabs = sessionstore['windows'][w]
-            if args.quiet:
-                print('window %d%s: %d tabs' % (w+1,['',' (selected)'][selected],len(tabs['tabs'])))
+            if args.quiet and args.grep is not None and not selected:
+                pass
+            elif args.grep is not None and selected:
+                print('Selected window %d (%d tabs):' % (w+1,len(window['tabs'])))
+                for i,tab in enumerate(window['tabs']):
+                    url = tabs_info(tab)
+                    if args.grep not in url['url']: continue
+                    print('  tab %d: %s' % (i+1,url['url']))
+            elif args.quiet:
+                print('window %d%s: %d tabs' % (w+1,['',' (selected)'][selected],len(window['tabs'])))
             elif selected:
                 print('Selected window %d:' % (w+1,))
-                tab = tabs['tabs'][args.tab-1]
-                print('  Selected tab (%d/%d):' % (args.tab,len(tabs['tabs'])))
+                tab = window['tabs'][args.tab-1]
+                print('  Selected tab (%d/%d):' % (args.tab,len(window['tabs'])))
                 url = tabs_info(tab)
                 print('    url: %s' % (url['url'],))
                 if '%' in url['url']:
@@ -295,9 +303,9 @@ def main(argv):
                 except UnicodeError:
                     print('    title: %s' % (url.get('title').encode(errors='backslashreplace'),))
             else:
-                tab = tabs['tabs'][tabs['selected']-1]
+                tab = window['tabs'][window['selected']-1]
                 url = tab['entries'][tab['index']-1]
-                print('Window %d: Selected tab (%d/%d): %s' % (w+1,tabs['selected'],len(tabs['tabs']),url['url']))
+                print('Window %d: Selected tab (%d/%d): %s' % (w+1,window['selected'],len(window['tabs']),url['url']))
 
         saved_sessionstore = list(dump4diff(sessionstore,'sessionstore'))
         if checkpoints is not None:
