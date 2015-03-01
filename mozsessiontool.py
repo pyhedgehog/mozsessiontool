@@ -156,6 +156,7 @@ checkpointOrder = ("profile-after-change", "final-ui-startup",
     "profile-change-net-teardown", "profile-change-teardown",
     "profile-before-change"
 )
+checkpointSkippable = set("sessionstore-windows-restored","sessionstore-final-state-write-complete")
 checkpointNames = {
     "profile-after-change":"Starting",
     "final-ui-startup":"Started, Loading session",
@@ -171,16 +172,23 @@ checkpointNames = {
 def showcheckpoint(sessionCheckpoints):
     state = "Init"
     sessionCheckpoints = sessionCheckpoints.copy()
+    skipped = []
     for event in checkpointOrder:
         if event in sessionCheckpoints and sessionCheckpoints[event]==True:
             state = "%s (%s)" % (checkpointNames[event],event)
             sessionCheckpoints.pop(event)
             continue
-        rest = ""
-        if sessionCheckpoints:
-          rest = "; "+(", ".join(["","not "][not v]+k for k,v in sessionCheckpoints.items()))
-        return state+rest
-    return state
+        if event in checkpointSkippable:
+            if event not in sessionCheckpoints:
+                skipped.append(event)
+            continue
+        break
+    rest = ""
+    if skipped:
+      rest = "; skipped: "+(", ".join(skipped))
+    if sessionCheckpoints:
+      rest = "; "+(", ".join(["","not "][not v]+k for k,v in sessionCheckpoints.items()))
+    return state+rest
 
 def tabs_info(tab):
     if tab.get('entries'):
