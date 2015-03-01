@@ -156,7 +156,7 @@ checkpointOrder = ("profile-after-change", "final-ui-startup",
     "profile-change-net-teardown", "profile-change-teardown",
     "profile-before-change"
 )
-checkpointSkippable = set("sessionstore-windows-restored","sessionstore-final-state-write-complete")
+checkpointSkippable = frozenset(["sessionstore-windows-restored","sessionstore-final-state-write-complete"])
 checkpointNames = {
     "profile-after-change":"Starting",
     "final-ui-startup":"Started, Loading session",
