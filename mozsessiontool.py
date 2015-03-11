@@ -174,6 +174,7 @@ def showcheckpoint(sessionCheckpoints):
     sessionCheckpoints = sessionCheckpoints.copy()
     skipped = []
     for event in checkpointOrder:
+        if not sessionCheckpoints: break
         if event in sessionCheckpoints and sessionCheckpoints[event]==True:
             state = "%s (%s)" % (checkpointNames[event],event)
             sessionCheckpoints.pop(event)
