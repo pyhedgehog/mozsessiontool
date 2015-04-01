@@ -194,6 +194,8 @@ def showcheckpoint(sessionCheckpoints):
 def tabs_info(tab):
     if tab.get('entries'):
         return tab['entries'][tab['index']-1]
+    if 'userTypedValue' not in tab:
+        return dict(url='about:blank', title=tab.get('title','New tab'))
     return dict(url=tab['userTypedValue'], title=tab.get('title','Loading...'))
 
 def dump4diff(obj,name='obj'):
@@ -313,7 +315,7 @@ def main(argv):
                     print('    title: %s' % (url.get('title').encode(errors='backslashreplace'),))
             else:
                 tab = window['tabs'][window['selected']-1]
-                url = tab['entries'][tab['index']-1]
+                url = tabs_info(tab)
                 print('Window %d: Selected tab (%d/%d): %s' % (w+1,window['selected'],len(window['tabs']),url['url']))
 
         saved_sessionstore = list(dump4diff(sessionstore,'sessionstore'))
