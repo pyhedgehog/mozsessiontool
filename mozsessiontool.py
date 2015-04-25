@@ -306,7 +306,7 @@ def main(argv):
                 print('    url: %s' % (url['url'],))
                 if '%' in url['url']:
                     try:
-                        print('    qurl:' % (unicode(urllib.unquote_plus(str(url['url'])),'utf-8'),))
+                        print('    qurl: %s' % (unicode(urllib.unquote_plus(str(url['url'])),'utf-8'),))
                     except Exception:
                         pass
                 try:
