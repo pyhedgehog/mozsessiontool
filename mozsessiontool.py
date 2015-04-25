@@ -270,7 +270,7 @@ def main(argv):
         if not 1 <= args.window <= len(sessionstore['windows']):
             parser.error("Invalid -w value (%d) - must be in range 1-%d" % (args.window,len(sessionstore['windows'])))
         if args.tab is None:
-            args.tab = sessionstore['windows'][args.window-1]['selected']
+            args.tab = max(1,sessionstore['windows'][args.window-1]['selected'])
             args.tab = min(args.tab,len(sessionstore['windows'][args.window-1]['tabs']))
         if not 1 <= args.tab <= len(sessionstore['windows'][args.window-1]['tabs']):
             parser.error("Invalid -t value (%d) - must be in range 1-%d" % (args.tab,len(sessionstore['windows'][args.window-1]['tabs'])))
