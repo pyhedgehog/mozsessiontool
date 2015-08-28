@@ -220,7 +220,8 @@ def main(argv):
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, sys.stdout.encoding,
                 'backslashreplace', sys.stdout.newlines, sys.stdout.line_buffering)
     parser = argparse.ArgumentParser(description='Process firefox sessionstore.js')
-    parser.add_argument('--debug-args', '-D', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--debug', '-D', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--debug-args', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--quiet', '-q', action='store_true', help='Be less verbose')
     parser.add_argument('--pretend', '--dry-run', '-n', action='store_true', help='Do nothing - only show changes')
     parser.add_argument('sessionstore', nargs='?', metavar='FILE', help='Path to sessionstore.js')
@@ -259,9 +260,11 @@ def main(argv):
         # load data
         st = os.fstat(sessionstore_fd.fileno())
         sessionstore = json.load(sessionstore_fd)
+        if args.debug: print(args.sessionstore)
         if args.checkpoints and os.path.isfile(args.checkpoints):
             checkpoints_fd = open(args.checkpoints,['r','r+'][want_save]+mode_tail,**open_args)
             checkpoints = json.load(checkpoints_fd)
+            if args.debug: print(args.checkpoints)
 
         # data-specific argument checks
         if args.window is None:
