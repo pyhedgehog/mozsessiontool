@@ -218,7 +218,8 @@ def dump4diff(obj,name='obj'):
 
 def main(argv):
     global parser, args, sessionstore, sessionstore_fd, checkpoints, checkpoints_fd
-    if hasattr(sys.stdout, 'errors') and hasattr(sys.stdout, 'buffer') and \
+    if sys.version_info[:2] > (2,6) and \
+       hasattr(sys.stdout, 'errors') and hasattr(sys.stdout, 'buffer') and \
        hasattr(sys.stdout, 'encoding') and hasattr(sys.stdout, 'newlines') and \
        hasattr(sys.stdout, 'line_buffering') and io is not None:
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, sys.stdout.encoding,
