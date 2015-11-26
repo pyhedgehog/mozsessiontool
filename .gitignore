@@ -54,7 +54,4 @@ docs/_build/
 target/
 
 # mozsessiontool-specific files
-sessionstore.js
-recovery.js
-sessionCheckpoints.json
 investigate
