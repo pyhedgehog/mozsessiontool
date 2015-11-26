@@ -95,6 +95,7 @@ def get_default_sessionstore():
     #print(profiles)
     l = glob.glob(os.path.join(profiles,"*.default"))
     #print(l)
+    if not l: return None,None
     profile = l[0]
     #print(profile)
     path = os.path.join(profile,"sessionstore.js")
