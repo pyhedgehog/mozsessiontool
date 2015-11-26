@@ -284,13 +284,14 @@ def main(argv):
             parser.error("Invalid -t value (%d) - must be in range 1-%d" % (args.tab,len(sessionstore['windows'][args.window-1]['tabs'])))
 
         # show generic info
-        stpw,stgr,stctime = getpwuid(st.st_uid), getgrgid(st.st_gid), time.ctime(st.st_ctime)
+        stpw,stgr,stmode,stctime = getpwuid(st.st_uid), getgrgid(st.st_gid), getstmode(st.st_mode), time.ctime(st.st_ctime)
         if args.test:
             st = type(st)(st[:-3]+(0,0,0))
             stpw = stgr = 'test'
             stctime = 'sometimes'
+            stmode = '-rw-rw-rw-'
         if args.quiet:
-            print('%s:%s %s %d %s' % (stpw, stgr, getstmode(st.st_mode), st.st_size, stctime))
+            print('%s:%s %s %d %s' % (stpw, stgr, stmode, st.st_size, stctime))
         else:
             ago = simplify(datetime.timedelta(seconds=time.time()-st.st_ctime))
             if args.test: ago = 'ages'
