@@ -4,10 +4,12 @@ import pprint
 
 assert 'pytest' in sys.modules
 testdir = os.path.dirname(__file__)
+sys.path.append(os.path.dirname(testdir))
 
 import pytest
 try: import mozsessiontool
 except ImportError:
+    print(os.getcwd())
     pprint.pprint(sys.path)
     raise
 
