@@ -216,12 +216,15 @@ def dump4diff(obj,name='obj'):
 
 def main(argv):
     global parser, args, sessionstore, sessionstore_fd, checkpoints, checkpoints_fd
-    if hasattr(sys.stdout, 'errors') and hasattr(sys.stdout, 'buffer') and io is not None:
+    if hasattr(sys.stdout, 'errors') and hasattr(sys.stdout, 'buffer') and \
+       hasattr(sys.stdout, 'encoding') and hasattr(sys.stdout, 'newlines') and \
+       hasattr(sys.stdout, 'line_buffering') and io is not None:
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, sys.stdout.encoding,
                 'backslashreplace', sys.stdout.newlines, sys.stdout.line_buffering)
-    parser = argparse.ArgumentParser(description='Process firefox sessionstore.js')
+    parser = argparse.ArgumentParser(prog=argv[0], description='Process firefox sessionstore.js')
     parser.add_argument('--debug', '-D', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--debug-args', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--test', action='store_true', help=argparse.SUPPRESS) # Special argument for tests to be reproducable
     parser.add_argument('--quiet', '-q', action='store_true', help='Be less verbose')
     parser.add_argument('--pretend', '--dry-run', '-n', action='store_true', help='Do nothing - only show changes')
     parser.add_argument('sessionstore', nargs='?', metavar='FILE', help='Path to sessionstore.js')
@@ -235,7 +238,7 @@ def main(argv):
     actions.add_argument('--wclose', '-W', dest='action', const='wclose', action='store_const', help='Close selected (or current) window (short form for --action=wclose)')
     actions.add_argument('--tclose', '-T', dest='action', const='tclose', action='store_const', help='Close selected (or current) tab (short form for --action=tclose)')
     actions.add_argument('--fix', '-f', dest='action', const='fix', action='store_const', help='Fix saved session state (short form for --action=fix)')
-    args = parser.parse_args(namespace=MozDefaults())
+    args = parser.parse_args(argv[1:], namespace=MozDefaults())
     want_save = args.action is not None
 
     # argument checks
@@ -279,10 +282,13 @@ def main(argv):
             parser.error("Invalid -t value (%d) - must be in range 1-%d" % (args.tab,len(sessionstore['windows'][args.window-1]['tabs'])))
 
         # show generic info
+        if args.test: st = type(st)(st[:-3]+(0,0,0))
         if args.quiet:
             print('%s:%s %s %d %s' % (getpwuid(st.st_uid), getgrgid(st.st_gid), getstmode(st.st_mode), st.st_size, time.ctime(st.st_ctime)))
         else:
-            print('%s:%s %s %d %s (%s ago)' % (getpwuid(st.st_uid), getgrgid(st.st_gid), getstmode(st.st_mode), st.st_size, time.ctime(st.st_ctime), simplify(datetime.timedelta(seconds=time.time()-st.st_ctime))))
+            ago = simplify(datetime.timedelta(seconds=time.time()-st.st_ctime))
+            if args.test: ago = 'ages'
+            print('%s:%s %s %d %s (%s ago)' % (getpwuid(st.st_uid), getgrgid(st.st_gid), getstmode(st.st_mode), st.st_size, time.ctime(st.st_ctime), ago))
             print('; '.join(sorted('%s: %s' % (str(k),simplify(v)) for k,v in sessionstore['session'].items())))
             #print('selected: %s' % (sessionstore['selectedWindow'],))
         if checkpoints is not None:
@@ -346,13 +352,10 @@ def main(argv):
             if len(window['tabs']) > window['selected']:
                 window['selected'] = len(window['tabs'])
             url = tabs_info(tab)
-            window['_closedTabs'].append(dict(
-                    image=tab['image'],
-                    title=url['title'],
-                    closedAt=int(time.time()),
-                    pos=args.tab,
-                    state=tab,
-                ))
+            closed_tab = dict(closedAt=int(time.time()), pos=args.tab, state=tab)
+            if 'title' in url: closed_tab['title'] = url['title']
+            if 'image' in tab: closed_tab['image'] = tab['image']
+            window['_closedTabs'].append(closed_tab)
         elif args.action == 'fix':
             if checkpoints is not None:
                 checkpoints.update(dict((k,True) for k in checkpointOrder))
