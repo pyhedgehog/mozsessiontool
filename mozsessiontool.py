@@ -295,7 +295,7 @@ def main(argv):
         else:
             ago = simplify(datetime.timedelta(seconds=time.time()-st.st_ctime))
             if args.test: ago = 'ages'
-            print('%s:%s %s %d %s (%s ago)' % (stpw, stgr, getstmode(st.st_mode), st.st_size, stctime, ago))
+            print('%s:%s %s %d %s (%s ago)' % (stpw, stgr, stmode, st.st_size, stctime, ago))
             print('; '.join(sorted('%s: %s' % (str(k),simplify(v)) for k,v in sessionstore['session'].items())))
             #print('selected: %s' % (sessionstore['selectedWindow'],))
         if checkpoints is not None:
