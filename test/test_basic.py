@@ -6,7 +6,10 @@ assert 'pytest' in sys.modules
 testdir = os.path.dirname(__file__)
 
 import pytest
-import mozsessiontool
+try: import mozsessiontool
+except ImportError:
+    pprint.pprint(sys.path)
+    raise
 
 def test_help(capsys):
     for opt in ('-h', '--help'):
