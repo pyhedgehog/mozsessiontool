@@ -127,7 +127,7 @@ actions:
 '''
 
 model_info = u'''\
-0:0 -rw-rw-rw- 179014 Thu Jan 01 03:00:00 1970 (ages ago)
+test:test -rw-rw-rw- 179014 sometimes (ages ago)
 lastUpdate: 0; recentCrashes: 0; startTime: 0
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1:
@@ -136,13 +136,13 @@ Selected window 1:
     title: pyhedgehog/mozsessiontool \xb7 GitHub
 '''
 model_quiet = u'''\
-0:0 -rw-rw-rw- 179014 Thu Jan 01 03:00:00 1970
+test:test -rw-rw-rw- 179014 sometimes
 checkpoint: Running (sessionstore-windows-restored)
 window 1 (selected): 3 tabs
 '''
 
 model_grep = u'''\
-0:0 -rw-rw-rw- 179014 Thu Jan 01 03:00:00 1970 (ages ago)
+test:test -rw-rw-rw- 179014 sometimes (ages ago)
 lastUpdate: 0; recentCrashes: 0; startTime: 0
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1 (3 tabs):
@@ -152,7 +152,7 @@ Selected window 1 (3 tabs):
 '''
 
 model_grep_py = u'''\
-0:0 -rw-rw-rw- 179014 Thu Jan 01 03:00:00 1970
+test:test -rw-rw-rw- 179014 sometimes
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1 (3 tabs):
   tab 2: https://github.com/pyhedgehog/mozsessiontool
@@ -160,7 +160,7 @@ Selected window 1 (3 tabs):
 '''
 
 model_pretend_fix = u'''\
-0:0 -rw-rw-rw- 179014 Thu Jan 01 03:00:00 1970
+test:test -rw-rw-rw- 179014 sometimes
 checkpoint: Running (sessionstore-windows-restored)
 window 1 (selected): 3 tabs
 --- sessionstore.js orig
@@ -169,18 +169,18 @@ window 1 (selected): 3 tabs
  sessionstore['_closedWindows'].len() = 0
  sessionstore['global'].keys() = []
  sessionstore['selectedWindow'] = 1
--sessionstore['session'].keys() = [u'lastUpdate', u'startTime', u'recentCrashes']
-+sessionstore['session'].keys() = [u'lastUpdate', u'startTime']
+-sessionstore['session'].keys() = ['lastUpdate', 'recentCrashes', 'startTime']
++sessionstore['session'].keys() = ['lastUpdate', 'startTime']
  sessionstore['session']['lastUpdate'] = 0
 -sessionstore['session']['recentCrashes'] = 0
  sessionstore['session']['startTime'] = 0
  sessionstore['windows'].len() = 1
- sessionstore['windows'][0].keys() = [u'cookies', u'busy', u'tabs', u'selected', u'_closedTabs', u'height', u'width', u'sizemode', u'screenY', u'screenX']
+ sessionstore['windows'][0].keys() = ['_closedTabs', 'busy', 'cookies', 'height', 'screenX', 'screenY', 'selected', 'sizemode', 'tabs', 'width']
 --- sessionCheckpoints.json orig
 +++ sessionCheckpoints.json changed
 @@ -1,4 +1,10 @@
--checkpoints.keys() = [u'sessionstore-windows-restored', u'profile-after-change', u'final-ui-startup']
-+checkpoints.keys() = ['profile-change-net-teardown', 'sessionstore-final-state-write-complete', u'final-ui-startup', 'quit-application', 'profile-change-teardown', 'profile-before-change', u'profile-after-change', 'quit-application-granted', u'sessionstore-windows-restored']
+-checkpoints.keys() = ['final-ui-startup', 'profile-after-change', 'sessionstore-windows-restored']
++checkpoints.keys() = ['final-ui-startup', 'profile-after-change', 'profile-before-change', 'profile-change-net-teardown', 'profile-change-teardown', 'quit-application', 'quit-application-granted', 'sessionstore-final-state-write-complete', 'sessionstore-windows-restored']
  checkpoints['final-ui-startup'] = True
  checkpoints['profile-after-change'] = True
 +checkpoints['profile-before-change'] = True
@@ -193,7 +193,7 @@ window 1 (selected): 3 tabs
 '''
 
 model_tab = u'''\
-0:0 -rw-rw-rw- 179014 Thu Jan 01 03:00:00 1970 (ages ago)
+test:test -rw-rw-rw- 179014 sometimes (ages ago)
 lastUpdate: 0; recentCrashes: 0; startTime: 0
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1:

@@ -66,6 +66,7 @@ inttypes = tuple(inttypes)
 try: types.UnicodeType
 except:
     def u(s): return s
+    unicode = str
 else:
     def u(s): return unicode(s)
 
@@ -75,7 +76,7 @@ def simplify(value):
         except UnicodeError: pass
     if type(value) in inttypes:
         if value >= 946674000000:
-            return time.ctime(value/1000.)
+            value = value/1000.
         if value >= 946674000:
             return time.ctime(value)
     if isinstance(value, datetime.timedelta):
@@ -205,7 +206,7 @@ def dump4diff(obj,name='obj'):
             for s in dump4diff(v,"%s[%d]"%(name,i)):
                 yield s
     elif isinstance(obj, dict):
-        yield "%s.keys() = %s\n" % (name,obj.keys())
+        yield "%s.keys() = %s\n" % (name,sorted(map(str, obj.keys())))
         for k,v in sorted(obj.items()):
             try: k = str(k)
             except UnicodeError: pass
@@ -282,13 +283,17 @@ def main(argv):
             parser.error("Invalid -t value (%d) - must be in range 1-%d" % (args.tab,len(sessionstore['windows'][args.window-1]['tabs'])))
 
         # show generic info
-        if args.test: st = type(st)(st[:-3]+(0,0,0))
+        stpw,stgr,stctime = getpwuid(st.st_uid), getgrgid(st.st_gid), time.ctime(st.st_ctime)
+        if args.test:
+            st = type(st)(st[:-3]+(0,0,0))
+            stpw = stgr = 'test'
+            stctime = 'sometimes'
         if args.quiet:
-            print('%s:%s %s %d %s' % (getpwuid(st.st_uid), getgrgid(st.st_gid), getstmode(st.st_mode), st.st_size, time.ctime(st.st_ctime)))
+            print('%s:%s %s %d %s' % (stpw, stgr, getstmode(st.st_mode), st.st_size, stctime))
         else:
             ago = simplify(datetime.timedelta(seconds=time.time()-st.st_ctime))
             if args.test: ago = 'ages'
-            print('%s:%s %s %d %s (%s ago)' % (getpwuid(st.st_uid), getgrgid(st.st_gid), getstmode(st.st_mode), st.st_size, time.ctime(st.st_ctime), ago))
+            print('%s:%s %s %d %s (%s ago)' % (stpw, stgr, getstmode(st.st_mode), st.st_size, stctime, ago))
             print('; '.join(sorted('%s: %s' % (str(k),simplify(v)) for k,v in sessionstore['session'].items())))
             #print('selected: %s' % (sessionstore['selectedWindow'],))
         if checkpoints is not None:
