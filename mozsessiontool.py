@@ -68,7 +68,13 @@ except:
     def u(s): return s
     unicode = str
 else:
-    def u(s): return unicode(s)
+    # to make diff prettier
+    class u(unicode):
+        def __repr__(self):
+            res = super(u, self).__repr__()
+            if res[:1] == 'u':
+                res = res[1:]
+            return res
 
 def simplify(value):
     if type(value) == getattr(types,'UnicodeType',None):
@@ -76,7 +82,7 @@ def simplify(value):
         except UnicodeError: pass
     if type(value) in inttypes:
         if value >= 946674000000:
-            value = value/1000.
+            return time.ctime(value/1000)
         if value >= 946674000:
             return time.ctime(value)
     if isinstance(value, datetime.timedelta):
@@ -202,19 +208,19 @@ def tabs_info(tab):
 
 def dump4diff(obj,name='obj'):
     if isinstance(obj, list):
-        yield "%s.len() = %d\n" % (name,len(obj))
+        yield u("%s.len() = %d\n") % (u(name),len(obj))
         for i,v in enumerate(obj):
             for s in dump4diff(v,"%s[%d]"%(name,i)):
                 yield s
     elif isinstance(obj, dict):
-        yield "%s.keys() = %s\n" % (name,sorted(map(str, obj.keys())))
+        yield u("%s.keys() = %s\n") % (u(name),sorted(map(u, obj.keys())))
         for k,v in sorted(obj.items()):
             try: k = str(k)
             except UnicodeError: pass
             for s in dump4diff(v,"%s[%r]"%(name,k)):
                 yield s
     else:
-        yield "%s = %r\n" % (name, obj)
+        yield u("%s = %r\n") % (name, obj)
 
 def main(argv):
     global parser, args, sessionstore, sessionstore_fd, checkpoints, checkpoints_fd
