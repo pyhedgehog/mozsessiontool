@@ -1,61 +1,81 @@
 import sys
 import os.path
 import pprint
+import pytest
 
-assert 'pytest' in sys.modules
 testdir = os.path.dirname(__file__)
 sys.path.append(os.path.dirname(testdir))
 
-import pytest
-try: import mozsessiontool
+try:
+    import mozsessiontool
 except ImportError:
     print(os.getcwd())
     pprint.pprint(sys.path)
     raise
 
+
 def test_help(capsys):
+    saveout, saveerr = sys.stdout, sys.stderr
     for opt in ('-h', '--help'):
         with pytest.raises(SystemExit):
             mozsessiontool.main(['mozsessiontool.py', opt])
+        assert sys.stdout is saveout
+        assert sys.stderr is saveerr
+        assert not sys.stdout.closed
+        assert not sys.stderr.closed
+        assert not saveout.closed
+        assert not saveerr.closed
         out, err = capsys.readouterr()
         assert err == ''
+        assert out
         assert out == model_help
+
 
 def test_info(capsys):
     mozsessiontool.main(['mozsessiontool.py', '--test', testdir])
     out, err = capsys.readouterr()
     assert err == ''
+    assert out
     assert out == model_info
+
 
 def test_quiet(capsys):
     for opt in ('-q', '--quiet'):
         mozsessiontool.main(['mozsessiontool.py', '--test', opt, testdir])
         out, err = capsys.readouterr()
         assert err == ''
+        assert out
         assert out == model_quiet
+
 
 def test_grep(capsys):
     for opt in ('-g', '--grep'):
         mozsessiontool.main(['mozsessiontool.py', '--test', opt, '.', testdir])
         out, err = capsys.readouterr()
         assert err == ''
+        assert out
         assert out == model_grep
         mozsessiontool.main(['mozsessiontool.py', '--test', '-q', opt, 'py', testdir])
         out, err = capsys.readouterr()
         assert err == ''
+        assert out
         assert out == model_grep_py
+
 
 def test_tab(capsys):
     for topt in ('-t', '--tab'):
         mozsessiontool.main(['mozsessiontool.py', '--test', topt, '3', testdir])
         out, err = capsys.readouterr()
         assert err == ''
+        assert out
         assert out == model_tab
         for wopt in ('-t', '--tab'):
             mozsessiontool.main(['mozsessiontool.py', '--test', wopt, '1', topt, '3', testdir])
             out, err = capsys.readouterr()
             assert err == ''
+            assert out
             assert out == model_tab
+
 
 def test_tab_err(capsys):
     for opt in ('-t', '--tab'):
@@ -65,6 +85,7 @@ def test_tab_err(capsys):
         assert err == model_tab_err
         assert out == ''
 
+
 def test_win_err(capsys):
     for opt in ('-w', '--win'):
         with pytest.raises(SystemExit):
@@ -73,6 +94,7 @@ def test_win_err(capsys):
         assert err == model_win_err
         assert out == ''
 
+
 def test_pretend_fix(capsys):
     for qopt in ('-q', '--quiet'):
         for nopt in ('-n', '--pretend', '--dry-run'):
@@ -80,11 +102,13 @@ def test_pretend_fix(capsys):
                 mozsessiontool.main(['mozsessiontool.py', '--test', qopt, nopt, fopt, testdir])
                 out, err = capsys.readouterr()
                 assert err == ''
+                assert out
                 assert out == model_pretend_fix
             for aopt in ('--action', '--do'):
                 mozsessiontool.main(['mozsessiontool.py', '--test', qopt, nopt, aopt, 'fix', testdir])
                 out, err = capsys.readouterr()
                 assert err == ''
+                assert out
                 assert out == model_pretend_fix
 
 
@@ -98,7 +122,8 @@ usage: mozsessiontool.py [-h] [--quiet] [--pretend] [--window WINDOW]
 Process firefox sessionstore.js
 
 positional arguments:
-  FILE                  Path to sessionstore.js
+  FILE                  Path to sessionstore.js or profile itself (path or
+                        name)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -127,22 +152,25 @@ actions:
 '''
 
 model_info = u'''\
-test:test -rw-rw-rw- 179014 sometimes (ages ago)
+tests
+test:test -rw-rw-rw- 179025 sometimes (ages ago)
 lastUpdate: 0; recentCrashes: 0; startTime: 0
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1:
   Selected tab (2/3):
     url: https://github.com/pyhedgehog/mozsessiontool
-    title: pyhedgehog/mozsessiontool \xb7 GitHub
+    title: pyhedgehog/mozsessiontool \xb7 GitHub - \u0442\u0435\u0441\u0442
 '''
 model_quiet = u'''\
-test:test -rw-rw-rw- 179014 sometimes
+tests
+test:test -rw-rw-rw- 179025 sometimes
 checkpoint: Running (sessionstore-windows-restored)
 window 1 (selected): 3 tabs
 '''
 
 model_grep = u'''\
-test:test -rw-rw-rw- 179014 sometimes (ages ago)
+tests
+test:test -rw-rw-rw- 179025 sometimes (ages ago)
 lastUpdate: 0; recentCrashes: 0; startTime: 0
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1 (3 tabs):
@@ -152,7 +180,8 @@ Selected window 1 (3 tabs):
 '''
 
 model_grep_py = u'''\
-test:test -rw-rw-rw- 179014 sometimes
+tests
+test:test -rw-rw-rw- 179025 sometimes
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1 (3 tabs):
   tab 2: https://github.com/pyhedgehog/mozsessiontool
@@ -160,7 +189,8 @@ Selected window 1 (3 tabs):
 '''
 
 model_pretend_fix = u'''\
-test:test -rw-rw-rw- 179014 sometimes
+tests
+test:test -rw-rw-rw- 179025 sometimes
 checkpoint: Running (sessionstore-windows-restored)
 window 1 (selected): 3 tabs
 --- sessionstore.js orig
@@ -193,7 +223,8 @@ window 1 (selected): 3 tabs
 '''
 
 model_tab = u'''\
-test:test -rw-rw-rw- 179014 sometimes (ages ago)
+tests
+test:test -rw-rw-rw- 179025 sometimes (ages ago)
 lastUpdate: 0; recentCrashes: 0; startTime: 0
 checkpoint: Running (sessionstore-windows-restored)
 Selected window 1:

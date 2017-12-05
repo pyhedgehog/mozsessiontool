@@ -1,11 +1,16 @@
 sudo: false
 language: python
 python:
-#  - "2.6"
   - "2.7"
-#  - "3.2"
   - "3.3"
   - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"
   - "nightly"
   - "pypy"
-script: "py.test"
+  - "pypy3"
+script:
+  - "pip install -rrequirements.txt -rrequirements_dev.txt"
+  - "py.test --showlocals"
+  - "flake8 --max-line-length=120 --show-source mozsessiontool.py"
