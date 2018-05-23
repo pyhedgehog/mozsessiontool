@@ -27,7 +27,7 @@ try:
 except ImportError:
     io = None
 try:
-    import lz4
+    import lz4.block
 except ImportError:
     lz4 = None
 
