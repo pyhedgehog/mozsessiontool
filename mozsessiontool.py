@@ -7,6 +7,7 @@ import glob
 import json
 import time
 import types
+import itertools
 import argparse
 import urllib
 import datetime
@@ -371,7 +372,7 @@ class MozSessionProfile4(SessionStoreLZ4Mixin, CheckPointsJsonMixin, MozSessionP
         return True
 
 
-def get_profile_paths(name='default'):
+def get_profile_paths(names=['default','default-release']):
     if sys.platform in ('win32', 'cygwin'):
         firefox = os.path.join(os.environ['USERPROFILE'], *('Application Data/Mozilla/Firefox'.split('/')))
         profiles = os.path.join(firefox, 'Profiles')
@@ -379,11 +380,11 @@ def get_profile_paths(name='default'):
     else:  # TODO: darwin not supported yet
         firefox = profiles = os.path.expanduser('~/.mozilla/firefox')
         # profiles_ini = os.path.expanduser('~/.mozilla/firefox/profiles.ini')
-    return glob.glob(os.path.join(profiles, "*."+name))
+    return list(itertools.chain(*(glob.glob(os.path.join(profiles, "*."+name)) for name in names)))
 
 
-def get_profile_sessionstore(name='default'):
-    profiles = get_profile_paths(name)
+def get_profile_sessionstore(names=['default','default-release']):
+    profiles = get_profile_paths(names)
     if not profiles:
         return None
     for path in profiles:
@@ -399,7 +400,7 @@ def get_sessionstore(path=None):
             if cls.check(path):
                 return cls(path)
         name = path
-        for path in get_profile_paths(name):
+        for path in get_profile_paths([name]):
             for cls in (MozSessionProfile4, MozSessionProfile3, MozSessionProfile2, MozSession1):
                 if cls.check(path):
                     return cls(path)
