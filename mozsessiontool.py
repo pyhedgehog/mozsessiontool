@@ -372,7 +372,7 @@ class MozSessionProfile4(SessionStoreLZ4Mixin, CheckPointsJsonMixin, MozSessionP
         return True
 
 
-def get_profile_paths(names=['default','default-release']):
+def get_profile_paths(names=['default', 'default-release']):
     if sys.platform in ('win32', 'cygwin'):
         firefox = os.path.join(os.environ['USERPROFILE'], *('Application Data/Mozilla/Firefox'.split('/')))
         profiles = os.path.join(firefox, 'Profiles')
@@ -383,7 +383,7 @@ def get_profile_paths(names=['default','default-release']):
     return list(itertools.chain(*(glob.glob(os.path.join(profiles, "*."+name)) for name in names)))
 
 
-def get_profile_sessionstore(names=['default','default-release']):
+def get_profile_sessionstore(names=['default', 'default-release']):
     profiles = get_profile_paths(names)
     if not profiles:
         return None
