@@ -372,18 +372,22 @@ class MozSessionProfile4(SessionStoreLZ4Mixin, CheckPointsJsonMixin, MozSessionP
         return True
 
 
-def get_profile_paths(names=['default', 'default-release']):
+def get_profile_paths(names=None):
+    if names is None:
+        names = ['default', 'default-release', 'default-esr*']
     if sys.platform in ('win32', 'cygwin'):
         firefox = os.path.join(os.environ['USERPROFILE'], *('Application Data/Mozilla/Firefox'.split('/')))
         profiles = os.path.join(firefox, 'Profiles')
         # profiles_ini = os.path.join(firefox, 'profiles.ini')
     else:  # TODO: darwin not supported yet
-        firefox = profiles = os.path.expanduser('~/.mozilla/firefox')
+        firefox = profiles = os.path.expanduser('~/.mozilla/firefox-esr')
+        if not os.path.isdir(profiles):
+            firefox = profiles = os.path.expanduser('~/.mozilla/firefox')
         # profiles_ini = os.path.expanduser('~/.mozilla/firefox/profiles.ini')
     return list(itertools.chain(*(glob.glob(os.path.join(profiles, "*."+name)) for name in names)))
 
 
-def get_profile_sessionstore(names=['default', 'default-release']):
+def get_profile_sessionstore(names=None):
     profiles = get_profile_paths(names)
     if not profiles:
         return None
