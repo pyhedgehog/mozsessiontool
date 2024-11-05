@@ -576,10 +576,17 @@ def main(argv):
                 pass
             elif args.grep is not None and selected:
                 print('Selected window %d (%d tabs):' % (w+1, len(window['tabs'])))
+                grep = args.grep.lower()
                 for i, tab in enumerate(window['tabs']):
                     url = tabs_info(tab)
-                    if args.grep in url['url']:
+                    if grep in url['url'].lower():
                         print('  tab %d: %s' % (i+1, url['url']))
+                    elif grep in url.get('title', '').lower():
+                        print('  tab %d: %s' % (i+1, url['url']))
+                        try:
+                            print(u('    title: %s') % (url.get('title'),))
+                        except UnicodeError:
+                            print('    title: %s' % (url.get('title').encode(errors='backslashreplace'),))
             elif args.quiet:
                 print('window %d%s: %d tabs' % (w+1, ['', ' (selected)'][selected], len(window['tabs'])))
             elif selected:
