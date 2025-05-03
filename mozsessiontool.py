@@ -14,6 +14,7 @@ import datetime
 import difflib
 import abc
 import six
+import logging
 from contextlib import closing
 try:
     import pwd
@@ -33,6 +34,7 @@ except ImportError:
     lz4 = None
 
 __version__ = "0.0.1"
+log = logging.getLogger('moz')
 
 try:
     types.UnicodeType
@@ -390,11 +392,14 @@ def get_profile_paths(names=None):
 def get_profile_sessionstore(names=None):
     profiles = get_profile_paths(names)
     if not profiles:
+        log.debug('get_profile_sessionstore(%r): no profiles', names)
         return None
     for path in profiles:
         for cls in (MozSessionProfile4, MozSessionProfile3, MozSessionProfile2, MozSession1):
             if cls.check(path):
+                log.debug('get_profile_sessionstore: %s.check(%r) succeeded', cls.__name__, path)
                 return cls(path)
+            log.debug('get_profile_sessionstore: %s.check(%r) failed', cls.__name__, path)
     return None
 
 
@@ -402,12 +407,16 @@ def get_sessionstore(path=None):
     if path:
         for cls in (MozSessionProfile4, MozSessionProfile3, MozSessionProfile2, MozSession1):
             if cls.check(path):
+                log.debug('get_sessionstore: %s.check(%r) succeeded', cls.__name__, path)
                 return cls(path)
+            log.debug('get_sessionstore: %s.check(%r) failed', cls.__name__, path)
         name = path
         for path in get_profile_paths([name]):
             for cls in (MozSessionProfile4, MozSessionProfile3, MozSessionProfile2, MozSession1):
                 if cls.check(path):
+                    log.debug('get_sessionstore: %s.check(%r) succeeded', cls.__name__, path)
                     return cls(path)
+                log.debug('get_sessionstore: %s.check(%r) failed', cls.__name__, path)
     return get_profile_sessionstore()
 
 
@@ -488,8 +497,10 @@ def stdout_encoding():
             encoding).lower()
 
 
-def main(argv):
+def main(argv=None):
     global parser, args, store  # for debugging using `python -i mozsessiontool.py`
+    if argv is None:
+        argv = sys.argv
     if sys.version_info[:2] > (2, 6) and io is not None and \
        hasattr(sys.stdout, 'errors') and hasattr(sys.stdout, 'buffer') and \
        hasattr(sys.stdout, 'encoding') and stdout_encoding() not in ('utf_8', 'utf_16', 'utf_32') and \
@@ -522,8 +533,8 @@ def main(argv):
     actions.add_argument('--fix', '-f', dest='action', const='fix', action='store_const',
                          help='Fix saved session state (short form for --action=fix)')
     args = parser.parse_args(argv[1:])
-    if args.debug_args or args.debug:
-        print('%s %s' % (getattr(sys, 'implementation', argparse.Namespace(name='cpython')).name, sys.version))
+    logging.basicConfig(level=logging.DEBUG if args.debug_args or args.debug else logging.WARNING if args.quiet else logging.INFO)
+    log.debug('%s %s', getattr(sys, 'implementation', argparse.Namespace(name='cpython')).name, sys.version)
     store = get_sessionstore(args.path)
     assert store
     want_save = args.action is not None

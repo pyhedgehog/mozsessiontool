@@ -58,3 +58,5 @@ target/
 
 # mozsessiontool-specific files
 investigate
+mozsessiontool.bin
+mozsessiontool.dist
